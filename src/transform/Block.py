@@ -47,6 +47,14 @@ class Block:
     def hash(self) -> str:
         return self.result['blockhash']
 
+    @property
+    def previous_hash(self) -> str:
+        return self.result['previousBlockhash']
+
+    @property
+    def previous_number(self) -> str:
+        return self.result['parentSlot']
+
     def has_transactions(self) -> bool:
         return not self.missing and len(self.result['transactions']) > 0
 
@@ -56,6 +64,14 @@ class Block:
 
     def time(self) -> time:
         return time.gmtime(self.result['blockTime'])
+
+    @property
+    def block_slot(self):
+        return self.result['blockSlot']
+
+    @property
+    def block_height(self):
+        return self.result['blockHeight']
 
     @cached_property
     def transactions(self) -> Transactions:

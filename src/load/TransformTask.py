@@ -22,29 +22,24 @@ def block_to_transactions(block: Block) -> ResultsAndErrors:
 
     for transaction in block.transactions:
         try:
+            programs = list(map(lambda a: a.key, transaction.instructions.programs))
             rows.append([
                 block.epoch,
+                block.block_slot,
+                block.block_height,
                 transaction.signature,
                 transaction.fee,
                 transaction.is_successful,
                 len(transaction.instructions),
-                json.dumps(list(map(lambda a: a.key, transaction.instructions.programs))),
+                list(set(transaction.signers)),
+                transaction.signers[0],
+                programs,
+                programs[0],
                 len(transaction.accounts),
-                json.dumps({
-                    account_type.name: [
-                        a.key for a in accounts
-                    ] for account_type, accounts in transaction.accounts_by_type().items()
-                }),
-                transaction.total_account_balance_change(BalanceChangeAgg.OUT).v,
-                transaction.total_account_balance_change(BalanceChangeAgg.IN).v,
                 json.dumps(len(transaction.mints)),
-                json.dumps(list(transaction.mints)),
-                json.dumps({mint: change.float for mint, change in
-                            transaction.total_token_changes(BalanceChangeAgg.OUT).items()}),
-                json.dumps({mint: change.float for mint, change in
-                            transaction.total_token_changes(BalanceChangeAgg.IN).items()}),
+                list(transaction.mints), # 留意, 非原来顺序
                 block.hash,
-                str(block.source)
+                list(transaction.log_messages())
             ])
         except Exception as e:
             errors.append(['blocks_to_transactions', str(block.source), str(e)])
@@ -65,14 +60,15 @@ def block_to_transfers(block: Block) -> ResultsAndErrors:
             if isinstance(interaction, Transfer):
                 rows.append([
                     block.epoch,
+                    block.block_slot,
+                    block.block_height,
                     interaction.source,
                     interaction.destination,
                     interaction.mint,
                     interaction.value.v,
                     interaction.value.scale,
                     interaction.transaction_signature,
-                    block.hash,
-                    str(block.source)
+                    block.hash
                 ])
         except Exception as e:
             errors.append(['blocks_to_transfers', str(block.source), str(e)])
@@ -83,24 +79,14 @@ def block_to_transfers(block: Block) -> ResultsAndErrors:
 def block_info(block: Block) -> ResultsAndErrors:
     row = [
         block.epoch,
+        block.block_slot,
+        block.block_height,
         block.hash,
-        str(block.source),
+        block.previous_hash,
+        block.previous_number,
         len(block.transactions)
     ]
 
-    for transactions in [block.transactions.successful, block.transactions.errors]:
-        row.extend([
-            len(transactions),
-            len(transactions.votes),
-            len(transactions.more_than_fee),
-            len(transactions.only_fee),
-            transactions.fees,
-            transactions.balance_change(BalanceChangeAgg.OUT).v
-        ])
-
-        accounts_by_type = transactions.accounts_by_type
-        for account_type in [AccountType.PROGRAM, AccountType.COIN, AccountType.TOKEN]:
-            row.append(len(accounts_by_type.get(account_type, [])))
 
     return [row], []
 
@@ -115,63 +101,48 @@ class TransformTask(Enum):
         block_to_transactions,
         [
             ('time', 'int64'),
+            ('block_number', 'int64'),
+            ('block_height', 'int64'),
             ('signature', 'string'),
             ('fee', 'int64'),
             ('isSuccessful', 'bool'),
             ('numInstructions', 'int8'),
-            ('programs', 'str'),
+            ('signers', 'object'),
+            ('main_signer', 'string'),
+            ('programs', 'object'),
+            ('main_program', 'string'),
             ('numAccounts', 'int8'),
-            ('accountsByType', 'string'),
-            ('lamportsOut', 'int64'),
-            ('lamportsIn', 'int64'),
             ('numMints', 'int8'),
-            ('mints', 'string'),
-            ('tokensOut', 'string'),
-            ('tokensIn', 'string'),
-            ('blockhash', 'string'),
-            ('path', 'string')
+            ('mints', 'object'),
+            ('block_hash', 'string'),
+            ('log_messages', 'object'),
         ]
     )
     TRANSFERS = (
         block_to_transfers,
         [
-
-            ('time', 'int64'),
+            ('timestamp', 'int64'),
+            ('block_number', 'int64'),
+            ('block_height', 'int64'),
             ('source', 'string'),
             ('destination', 'string'),
             ('mint', 'string'),
             ('value', 'int64'),
             ('scale', 'int8'),
-            ('transaction', 'string'),
-            ('blockhash', 'string'),
-            ('path', 'string')
+            ('signature', 'string'),
+            ('block_hash', 'string')
         ]
     )
     BLOCKS = (
         block_info,
         [
-            ('time', 'int64'),
+            ('timestamp', 'int64'),
+            ('number', 'int64'),
+            ('block_height', 'int64'),
             ('hash', 'string'),
-            ('path', 'string'),
+            ('previous_hash', 'string'),
+            ('previous_number', 'int64'),
             ('numTransactions', 'int64'),
-            ('numSuccessful', 'int64'),
-            ('successfulVotes', 'int64'),
-            ('successfulTransactionsMoreThanFee', 'int64'),
-            ('successfulTransactionsOnlyFee', 'int64'),
-            ('successfulFees', 'int64'),
-            ('successfulBalanceChange', 'int64'),
-            ('successfulProgramAccounts', 'int64'),
-            ('successfulCoinAccounts', 'int64'),
-            ('successfulTokenAccounts', 'int64'),
-            ('numErrors', 'int64'),
-            ('errorVotes', 'int64'),
-            ('errorTransactionsMoreThanFee', 'int64'),
-            ('errorTransactionsOnlyFee', 'int64'),
-            ('errorFees', 'int64'),
-            ('errorBalanceChange', 'int64'),
-            ('errorProgramAccounts', 'int64'),
-            ('errorCoinAccounts', 'int64'),
-            ('errorTokenAccounts', 'int64')
         ]
     )
 

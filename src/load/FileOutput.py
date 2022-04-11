@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import traceback
 import json
 import multiprocessing
 from argparse import ArgumentParser
@@ -86,7 +87,7 @@ class FileOutput:
                 results[task_name] = results_and_errors[0]
                 errors.extend(results_and_errors[1])
         except Exception as e:
-            errors.append(['json_to_blocks', block_source, str(e)])
+            errors.append(['json_to_blocks', block_source, str(traceback.format_exc())])
 
         return results, errors
 
@@ -150,7 +151,7 @@ class FileOutput:
                         .map(partial(lambda task_name, result: result[0][task_name], task.name))
                         .flatten()
                         .to_dataframe(meta=task.meta),
-                    f'{str(destination)}_{str(task.name).lower()}'
+                    f'{str(destination)}/{str(task.name).lower()}'
                 ))
 
             # collect all the errors
@@ -172,6 +173,9 @@ class FileOutput:
 class FileOutputFormat(Enum):
     CSV = (
         lambda delayed, path: delayed.to_csv(f'{path}.csv', index=False, single_file=True, compute=False), 0
+    )
+    JSONL = (
+        lambda delayed, path: delayed.to_json(f'{path}.json', orient='records', lines=True), 2
     )
     PARQUET = (
         lambda delayed, path: delayed.to_parquet(f'{path}', compute=False), 1

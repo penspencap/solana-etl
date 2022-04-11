@@ -100,19 +100,20 @@ class Extract:
 
         for slot in get_slots():
             timed_response = self.execute_with_backoff(lambda: self.get_block(slot))
-            if timed_response.response is None:
+            if timed_response.response is None or timed_response.response.get('result') is None:
                 print(f'Error fetching info for slot {slot}.')
             else:
                 call_time += timed_response.call_time
                 call_time_with_wait += timed_response.total_time
-
+                if isinstance(timed_response.response, dict) and isinstance(timed_response.response['result'], dict):
+                    timed_response.response['result']['blockSlot'] = slot
                 start = time.perf_counter()
                 self.process_block(slot, timed_response.response)
                 process_time += time.perf_counter() - start
 
                 num_blocks += 1
 
-            if num_blocks % 60 == 0:
+            if num_blocks % 60 == 0 and num_blocks != 0:
                 print(f'Extracted {num_blocks} blocks ending on {slot} with average times: '
                       f'call: {call_time/num_blocks:.2f}s, '
                       f'call with wait: {call_time_with_wait/num_blocks:.2f}s, '

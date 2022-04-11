@@ -1,6 +1,6 @@
 from collections import defaultdict
 from functools import partial
-from typing import List, Type, TypeVar
+from typing import List, Type, TypeVar, Dict
 
 from src.transform.Block import Block
 from src.transform.ProgramInstruction import ProgramInstruction
@@ -42,7 +42,7 @@ class Interactions:
     def __len__(self):
         return len(self.interactions)
 
-    def by_type(self) -> dict[Type[T], List[Interaction]]:
+    def by_type(self) -> Dict[Type[T], List[Interaction]]:
         by_type = defaultdict(lambda: [])
 
         for interaction in self.interactions:

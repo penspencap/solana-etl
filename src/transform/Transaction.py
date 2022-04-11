@@ -62,6 +62,9 @@ class Transaction:
     def signatures(self) -> List[str]:
         return self.transaction['signatures']
 
+    def log_messages(self) -> List[str]:
+        return self.meta['logMessages']
+
     @cached_property
     def instructions(self) -> Instructions:
         """ Construct the list of instructions with any nested inner instructions. """
@@ -158,6 +161,10 @@ class Transaction:
     def mints(self) -> Set[str]:
         """ All token mints in the transaction. """
         return {change.mint for change in self.token_balance_changes.values()}
+
+    @property
+    def signers(self) -> List[str]:
+        return [account.key for account in self.accounts if account.signer is True]
 
     def accounts_by_type(self) -> Dict[AccountType, Set[Account]]:
         program_accounts = self.instructions.programs
