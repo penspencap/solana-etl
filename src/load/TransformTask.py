@@ -31,10 +31,18 @@ def block_to_transactions(block: Block) -> ResultsAndErrors:
                 transaction.fee,
                 transaction.is_successful,
                 len(transaction.instructions),
+                [{
+                    "program": instruction.program.key,
+                    "gen_id": instruction.gen_id,
+                    "info_values": json.dumps(getattr(instruction, 'info_values', '')),
+                    "data": getattr(instruction, 'data', None),
+                    "instruction_type": getattr(instruction, 'instruction_type', None),
+                    "accounts": [account.key for account in instruction.accounts],
+                } for instruction in transaction.instructions],
                 list(set(transaction.signers)),
                 transaction.signers[0],
                 programs,
-                programs[0],
+                list(transaction.accounts._accounts_by_key.keys()),
                 len(transaction.accounts),
                 json.dumps(len(transaction.mints)),
                 list(transaction.mints), # 留意, 非原来顺序
@@ -87,8 +95,32 @@ def block_info(block: Block) -> ResultsAndErrors:
         len(block.transactions)
     ]
 
-
     return [row], []
+
+
+# def block_instruction(block: Block) -> ResultsAndErrors:
+#     rows = []
+#     errors = []
+#
+#     for transaction in block.transactions:
+#         for instruction in transaction.instructions:
+#             try:
+#                 rows.append([
+#                     block.epoch,
+#                     block.block_slot,
+#                     block.block_height,
+#                     instruction.program,
+#                     instruction.program_id,
+#                     instruction.type,
+#                     instruction.info,
+#                     interaction.value.scale,
+#                     transaction.signers,
+#                     transaction.signature,
+#                     block.hash
+#                 ])
+#             except Exception as e:
+#                 errors.append(['block_instruction', str(block.source), str(e)])
+#     return rows, errors
 
 class TransformTask(Enum):
     """
@@ -105,17 +137,18 @@ class TransformTask(Enum):
             ('block_height', 'int64'),
             ('signature', 'string'),
             ('fee', 'int64'),
-            ('isSuccessful', 'bool'),
-            ('numInstructions', 'int8'),
+            ('is_successful', 'bool'),
+            ('num_instructions', 'int8'),
+            ('instructions', 'object'),
             ('signers', 'object'),
             ('main_signer', 'string'),
             ('programs', 'object'),
-            ('main_program', 'string'),
-            ('numAccounts', 'int8'),
-            ('numMints', 'int8'),
+            ('accounts', 'object'),
+            ('num_accounts', 'int8'),
+            ('num_mints', 'int8'),
             ('mints', 'object'),
             ('block_hash', 'string'),
-            ('log_messages', 'object'),
+            ('logMessages', 'object'),
         ]
     )
     TRANSFERS = (
@@ -142,9 +175,24 @@ class TransformTask(Enum):
             ('hash', 'string'),
             ('previous_hash', 'string'),
             ('previous_number', 'int64'),
-            ('numTransactions', 'int64'),
+            ('num_transactions', 'int64'),
         ]
     )
+    # INSTRUCTIONS = (
+    #     block_instruction,
+    #     [
+    #         ('timestamp', 'int64'),
+    #         ('block_number', 'int64'),
+    #         ('block_height', 'int64'),
+    #         ('signature', 'string'),
+    #         ('block_hash', 'string'),
+    #         ('program_id', 'string'),
+    #         ('program_name', 'string'),
+    #         ('accounts', 'string'),
+    #         ('type', 'string'),
+    #         ('info', 'object'),
+    #     ]
+    # )
 
     @staticmethod
     def all() -> Set[TransformTask]:

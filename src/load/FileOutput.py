@@ -146,15 +146,25 @@ class FileOutput:
             # extract out the specific transform results, flatten, and create a delayed task to output to file
             task_results = []
             for task in tasks:
+                last_path = str(destination).split('/')[-1]
+                if last_path.isnumeric():
+                    output_path = str(destination).replace(f'/{last_path}', f'/{str(task.name).lower()}') + f'/{last_path}'
+                else:
+                    output_path = f'{str(destination)}/{str(task.name).lower()}'
                 task_results.append(destination_format.to_file(
                     results_with_errors
                         .map(partial(lambda task_name, result: result[0][task_name], task.name))
                         .flatten()
                         .to_dataframe(meta=task.meta),
-                    f'{str(destination)}/{str(task.name).lower()}'
+                    output_path
                 ))
 
             # collect all the errors
+            last_path = str(destination).split('/')[-1]
+            if last_path.isnumeric():
+                error_path = str(destination).replace(f'/{last_path}', f'/errors') + f'/{last_path}'
+            else:
+                error_path = f'{destination}_errors'
             errors = destination_format.to_file(
                 results_with_errors.map(lambda r: r[1])
                     .flatten()
@@ -163,7 +173,7 @@ class FileOutput:
                         ('error', 'string'),
                         ('path', 'string')
                     ]),
-                f'{destination}_errors'
+                error_path
             )
 
             # defer compute of both results so dask will know to reuse intermediate results
@@ -175,7 +185,7 @@ class FileOutputFormat(Enum):
         lambda delayed, path: delayed.to_csv(f'{path}.csv', index=False, single_file=True, compute=False), 0
     )
     JSONL = (
-        lambda delayed, path: delayed.to_json(f'{path}.json', orient='records', lines=True), 2
+        lambda delayed, path: delayed.to_json(f'{path}', orient='records', lines=True), 2
     )
     PARQUET = (
         lambda delayed, path: delayed.to_parquet(f'{path}', compute=False), 1
