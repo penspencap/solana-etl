@@ -39,8 +39,7 @@ setuptools.setup(
         'numpy==1.22.0',
         'pandas==1.3.5',
         'solana==0.19.0'
-        'google-cloud-bigquery'
+        'google-cloud-bigquery',
+        'joblib==1.1.0'
     ]
 )
-
-""" python3 src/load/FileOutput.py --tasks all --temp_dir /home/klg/pen/temp --blocks_dir /home/klg/pen/data/129010000/ --destination_dir /home/klg/pen/bq_data/129010000 --destination_format jsonl"""

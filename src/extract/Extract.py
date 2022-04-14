@@ -4,6 +4,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict
+from joblib import Parallel, delayed
 
 from solana.rpc.api import Client
 
@@ -97,6 +98,7 @@ class Extract:
         call_time = 0
         call_time_with_wait = 0
         process_time = 0
+        Parallel(n_jobs=4)(delayed(self.slot_function)(slot) for slot in get_slots())
 
         for slot in get_slots():
             timed_response = self.execute_with_backoff(lambda: self.get_block(slot))
@@ -123,6 +125,26 @@ class Extract:
                 call_time = 0
                 call_time_with_wait = 0
                 process_time = 0
+
+    def start_multi(self, start: int, end: int, n_jobs: int):
+        def get_slots():
+            if end is None:
+                return itertools.count(start)
+            elif end < start:
+                return range(start, end - 1, -1)
+            else:
+                return range(start, end + 1)
+        Parallel(n_jobs=n_jobs, backend='multiprocessing')(delayed(self.slot_function)(slot) for slot in get_slots())
+
+    def slot_function(self, slot):
+        timed_response = self.execute_with_backoff(lambda: self.get_block(slot))
+        if timed_response.response is None or timed_response.response.get('result') is None:
+            print(f'Error fetching info for slot {slot}.')
+        else:
+            if isinstance(timed_response.response, dict) and isinstance(timed_response.response['result'], dict):
+                timed_response.response['result']['blockSlot'] = slot
+            start = time.perf_counter()
+            self.process_block(slot, timed_response.response)
 
 
     @abstractmethod

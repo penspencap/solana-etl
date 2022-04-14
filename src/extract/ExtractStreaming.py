@@ -1,3 +1,4 @@
+import json
 from argparse import ArgumentParser
 from typing import Set, Dict
 
@@ -26,11 +27,12 @@ class ExtractStreaming(Extract):
         path_base = self.output_path.joinpath(str(slot // self.slots_per_dir * self.slots_per_dir))
 
         def write_rows(name: str, df: DataFrame):
-            file_path = path_base.with_name(f'{path_base.name}_{name.lower()}.csv')
+            file_path = path_base.with_name(f'{path_base.name}_{name.lower()}.json')
             if file_path.exists():
-                df.to_csv(str(file_path), mode='a', index=False, header=False)
+                with open(file_path, 'a+') as f:
+                    df.to_json(f, orient='records', lines=True)
             else:
-                df.to_csv(str(file_path), index=False, header=True)
+                df.to_json(str(file_path), orient='records', lines=True)
 
         try:
             block = Block(block_json, str(slot))
@@ -41,6 +43,14 @@ class ExtractStreaming(Extract):
 
                 write_rows(task.name, task.to_df(results_and_errors[0]))
                 write_rows('errors', TransformTask.errors_to_df(results_and_errors[1]))
+            raw_block_path = path_base.with_name(f'{path_base.name}_blocks_raw.txt')
+            if raw_block_path.exists():
+                with open(raw_block_path, 'a+') as f:
+                    f.write(json.dumps(block_json) + '\n')
+            else:
+                with open(raw_block_path, 'w') as f:
+                    f.write(json.dumps(block_json) + '\n')
+
         except Exception as e:
             write_rows('errors', TransformTask.errors_to_df([['process_block', slot, str(e)]]))
 
