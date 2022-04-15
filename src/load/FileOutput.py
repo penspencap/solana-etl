@@ -38,7 +38,7 @@ class FileOutput:
     @contextmanager
     def with_local_cluster(
         temp_dir: str,
-        n_workers: int = min(multiprocessing.cpu_count(), 6),
+        n_workers: int = min(multiprocessing.cpu_count(), 10),
         **kwargs
     ) -> FileOutput:
         """
