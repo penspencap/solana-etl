@@ -11,6 +11,7 @@ def run_upload(data):
     bucket = storage_client.get_bucket(bucket)
     blob = bucket.blob(target)
     blob.upload_from_filename(src)
+    print(f'{src} success upload to target {target}')
 
 
 def upload_data_to_gcs(task, blocks, bucket='crypto_etl', n_jobs=4):
