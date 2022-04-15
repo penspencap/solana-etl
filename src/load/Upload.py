@@ -32,10 +32,10 @@ def upload_data_to_gcs(task, blocks, bucket='crypto_etl', n_jobs=4):
 
 
 def upload_block_raw_to_gcs(blocks, bucket='crypto_etl'):
-    _objects = f'solana_export/blocks_raw/{blocks}/'
+    _objects = f'solana_export/blocks_raw/'
     _filename = f'{blocks}.gz'
     filename = f'/solana_data/data/{blocks}/'
-    raw_block_dir = f'/solana_data/blocks_raw/{blocks}/'
+    raw_block_dir = f'/solana_data/blocks_raw/'
     _make_targz_one_by_one(raw_block_dir + _filename, filename)
     run_upload((bucket, raw_block_dir + _filename, _objects + _filename))
 
