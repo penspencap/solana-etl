@@ -42,8 +42,11 @@ def main():
     parser.add_argument(
         'dir_blocks', type=int, help='Directory to dump block responses.'
     )
+    parser.add_argument(
+        'n_jobs', type=int, help='nodes to update data.'
+    )
     args = parser.parse_args()
-    for _data_type in ['blocks', 'transfer']:
+    for _data_type in ['blocks', 'transfers', 'transactions']:
         upload_data_to_gcs(_data_type, args.dir_blocks)
 
     upload_block_raw_to_gcs(args.dir_blocks, n_jobs=args.n_jobs)
