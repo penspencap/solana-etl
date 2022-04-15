@@ -22,13 +22,13 @@ def upload_data_to_gcs(task, blocks, bucket='crypto_etl', n_jobs=4):
     _objects = f'solana_export/{mapper[task]}/{blocks}/'
     filename = f'/solana_data/bq_data/{task}/{blocks}/'
 
-    Parallel(n_jobs=n_jobs)(delayed(run_upload)((bucket, filename+_filename, _objects+_filename, )) for _filename in os.listdir(filename))
+    Parallel(n_jobs=n_jobs, backend='multiprocessing')(delayed(run_upload)((bucket, filename+_filename, _objects+_filename, )) for _filename in os.listdir(filename))
 
 
 def upload_block_raw_to_gcs(blocks, bucket='crypto_etl', n_jobs=4):
     _objects = f'solana_export/blocks_raw/{blocks}/'
     filename = f'/solana_data/data/{blocks}/'
-    Parallel(n_jobs=n_jobs)(
+    Parallel(n_jobs=n_jobs, backend='multiprocessing')(
         delayed(run_upload)((bucket, filename + _filename, _objects + _filename,)) for _filename in os.listdir(filename)
     )
 
