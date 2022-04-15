@@ -98,7 +98,6 @@ class Extract:
         call_time = 0
         call_time_with_wait = 0
         process_time = 0
-        Parallel(n_jobs=4)(delayed(self.slot_function)(slot) for slot in get_slots())
 
         for slot in get_slots():
             timed_response = self.execute_with_backoff(lambda: self.get_block(slot))
@@ -143,7 +142,6 @@ class Extract:
         else:
             if isinstance(timed_response.response, dict) and isinstance(timed_response.response['result'], dict):
                 timed_response.response['result']['blockSlot'] = slot
-            start = time.perf_counter()
             self.process_block(slot, timed_response.response)
 
 
