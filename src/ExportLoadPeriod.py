@@ -52,6 +52,7 @@ def main():
     )
 
     for start, end, dir_path_block in split(args.start, args.end):
+        print('running data===', start, end)
         extract.start_multi(start, end, args.n_jobs, _range=solana_client.get_confirmed_blocks(start, end)['result'])
         with FileOutput.with_local_cluster(temp_dir=args.temp_dir, blocks_dir=args.output_loc + f'/{dir_path_block}') as output:
             output.write(
