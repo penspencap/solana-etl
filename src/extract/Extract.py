@@ -45,7 +45,7 @@ class Extract:
         self.output_path = Path(output_loc)
         self.slots_per_dir = slots_per_dir
 
-        self._client = Client(endpoint)
+        self._client = Client(endpoint, timeout=60)
 
     def execute_with_backoff(
         self,
@@ -125,7 +125,7 @@ class Extract:
                 call_time_with_wait = 0
                 process_time = 0
 
-    def start_multi(self, start: int, end: int, n_jobs: int):
+    def start_multi(self, start: int, end: int, n_jobs: int, _range = None):
         def get_slots():
             if end is None:
                 return itertools.count(start)
@@ -133,11 +133,14 @@ class Extract:
                 return range(start, end - 1, -1)
             else:
                 return range(start, end + 1)
-        Parallel(n_jobs=n_jobs, backend='multiprocessing')(delayed(self.slot_function)(slot) for slot in get_slots())
+        if _range is not None and isinstance(_range, list):
+            _range = get_slots()
+        Parallel(n_jobs=n_jobs, backend='multiprocessing')(delayed(self.slot_function)(slot) for slot in _range)
 
-    def slot_function(self, slot):
+    def slot_function(self, slot, count=0):
         timed_response = self.execute_with_backoff(lambda: self.get_block(slot))
-        if timed_response.response is None or timed_response.response.get('result') is None:
+        if timed_response.response is None or timed_response.response.get('result') is None and count > 2:
+            self.slot_function(slot, count+1)
             print(f'Error fetching info for slot {slot}.')
         else:
             if isinstance(timed_response.response, dict) and isinstance(timed_response.response['result'], dict):

@@ -1,0 +1,60 @@
+[
+    {
+        "name": "timestamp",
+        "type": "TIMESTAMP",
+        "mode": "REQUIRED",
+        "description": "Timestamp of the block where this transfer was in"
+    },
+    {
+        "name": "block_number",
+        "type": "INT64",
+        "mode": "REQUIRED",
+        "description": "Block number where this transfer was in"
+    },
+    {
+        "name": "block_height",
+        "type": "INT64",
+        "mode": "REQUIRED",
+        "description": "Block number where this transfer was in"
+    },
+    {
+        "name": "source",
+        "type": "STRING",
+        "description": "Address of the sender"
+    },
+    {
+        "name": "destination",
+        "type": "STRING",
+        "description": "Address of the receiver"
+    },
+    {
+        "name": "mint",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "ERC20 token address"
+    },
+    {
+        "name": "value",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Amount of tokens transferred (BEP20) / id of the token transferred (BEP721). Use safe_cast for casting to NUMERIC or FLOAT64"
+    },
+    {
+        "name": "scale",
+        "type": "INT64",
+        "mode": "REQUIRED",
+        "description": "decimals"
+    },
+    {
+        "name": "signature",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Transaction hash"
+    },
+    {
+        "name": "block_hash",
+        "type": "STRING",
+        "mode": "REQUIRED",
+        "description": "Hash of the block where this transfer was in"
+    }
+]
