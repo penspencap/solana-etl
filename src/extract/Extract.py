@@ -133,13 +133,15 @@ class Extract:
                 return range(start, end - 1, -1)
             else:
                 return range(start, end + 1)
-        if _range is not None and isinstance(_range, list):
+        if _range is None or not isinstance(_range, list):
             _range = get_slots()
         Parallel(n_jobs=n_jobs, backend='multiprocessing')(delayed(self.slot_function)(slot) for slot in _range)
 
     def slot_function(self, slot, count=0):
         timed_response = self.execute_with_backoff(lambda: self.get_block(slot))
-        if timed_response.response is None or timed_response.response.get('result') is None and count > 2:
+        if count > 3:
+            return
+        if timed_response.response is None or timed_response.response.get('result') is None:
             self.slot_function(slot, count+1)
             print(f'Error fetching info for slot {slot}.')
         else:
