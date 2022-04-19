@@ -1,5 +1,5 @@
 import os
-
+import time
 from google.cloud import storage
 from joblib import Parallel, delayed
 
@@ -8,13 +8,18 @@ from argparse import ArgumentParser
 import os, tarfile
 
 
-def run_upload(data):
-    bucket, src, target = data
-    storage_client = storage.Client()
-    bucket = storage_client.get_bucket(bucket)
-    blob = bucket.blob(target)
-    blob.upload_from_filename(src)
-    print(f'{src} success upload to target {target}')
+def run_upload(data, retry = 0):
+    try:
+        bucket, src, target = data
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket(bucket)
+        blob = bucket.blob(target)
+        blob.upload_from_filename(src)
+        print(f'{src} success upload to target {target}')
+    except:
+        time.sleep(retry*2)
+        if retry < 3:
+            run_upload(data, retry+1)
 
 
 def upload_data_to_gcs(task, blocks, bucket='crypto_etl', n_jobs=4):
