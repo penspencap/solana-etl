@@ -34,8 +34,8 @@ def upload_data_to_gcs(task, blocks, bucket='crypto_etl', n_jobs=4):
     _objects = f'solana_export/{mapper[task]}/{blocks}/'
     filename = f'/solana_data/bq_data/{task}/{blocks}/'
     storage_client = storage.Client()
-    bucket = storage_client.get_bucket(bucket)
-    blobs = bucket.list_blobs(prefix=_objects)
+    _bucket = storage_client.get_bucket(bucket)
+    blobs = _bucket.list_blobs(prefix=_objects)
     for blob in blobs:
         blob.delete()
         print(_objects, 'was delete')
