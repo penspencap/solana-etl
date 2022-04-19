@@ -39,7 +39,7 @@ def main():
     parser.add_argument('--temp_dir', type=str, help='Temp directory for dask when spilling to disk.', required=True)
     parser.add_argument('--destination_dir', type=str, help='Where to write the results.', required=True)
     parser.add_argument('--destination_format', type=str, help='File format of results.', required=True)
-    parser.add_argument('--skip_download', type=bool, help='download blocks or not.', required=False)
+    parser.add_argument('--skip_download', type=bool, default=False, help='download blocks or not.', required=False)
 
     parser.add_argument('--keep_subdirs', help='Produce results for each subdir of source.', action='store_true')
 
