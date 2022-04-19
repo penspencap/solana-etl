@@ -11,6 +11,9 @@ import os, tarfile
 def run_upload(data, retry = 0):
     try:
         bucket, src, target = data
+        empty_file = os.path.getsize(src) == 1
+        if empty_file:
+            return
         storage_client = storage.Client()
         bucket = storage_client.get_bucket(bucket)
         blob = bucket.blob(target)
@@ -30,6 +33,12 @@ def upload_data_to_gcs(task, blocks, bucket='crypto_etl', n_jobs=4):
     }
     _objects = f'solana_export/{mapper[task]}/{blocks}/'
     filename = f'/solana_data/bq_data/{task}/{blocks}/'
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(bucket)
+    blobs = bucket.list_blobs(prefix=_objects)
+    for blob in blobs:
+        blob.delete()
+        print(_objects, 'was delete')
 
     Parallel(n_jobs=n_jobs, backend='multiprocessing')(
         delayed(run_upload)((bucket, filename + _filename, _objects + _filename,)) for _filename in
