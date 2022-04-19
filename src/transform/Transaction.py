@@ -63,13 +63,13 @@ class Transaction:
         return self.transaction['signatures']
 
     def log_messages(self) -> List[str]:
-        return self.meta['logMessages']
+        return self.meta.get('logMessages') or []
 
     @cached_property
     def instructions(self) -> Instructions:
         """ Construct the list of instructions with any nested inner instructions. """
         inner_instructions = {}
-        for inner in self.meta['innerInstructions']:
+        for inner in self.meta.get('innerInstructions') or []:
             inner_instructions[inner['index']] = list(map(
                 lambda data: Instruction.factory(self.accounts, data),
                 inner['instructions']

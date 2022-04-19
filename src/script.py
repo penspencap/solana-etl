@@ -33,7 +33,7 @@ from google.cloud.bigquery import TimePartitioning
 
 # export PYTHONPATH=/solana_data/solana-etl;cd /solana_data/solana-etl/;/opt/service/python3.8.10/bin/python3 src/ExportLoadPeriod.py /solana_data/data --start 130000000 --end 130249999 --endpoint https://nameless-rough-shadow.solana-mainnet.quiknode.pro/90ad239f98ba9188c30660c2eeec4ef994627cec/ --n_jobs 15 --tasks all --temp_dir /solana_data/temp --destination_dir /solana_data/bq_data/ --destination_format jsonl
 
-def load_to_bq(task):
+def load_to_bq(task, filter_='1261*'):
     client = bigquery.Client('footprint-etl-internal')
     job_config = bigquery.LoadJobConfig()
     schema_path = os.path.join('/Users/pen/cryptoProject/solana-etl/src/resource/schema/{task}.json'.format(task=task))
@@ -43,8 +43,8 @@ def load_to_bq(task):
     job_config.write_disposition = 'WRITE_TRUNCATE'
     job_config.ignore_unknown_values = True
     job_config.time_partitioning = TimePartitioning(field='time' if task == 'transactions' else 'timestamp')
-    export_location_uri = 'gs://crypto_etl/solana_export/{task}/1286*'.format(task=task)
-    table_ref = client.dataset('crypto_solana_raw', project='footprint-blockchain-etl').table(task)
+    export_location_uri = f'gs://crypto_etl/solana_export/{task}/{filter_}'
+    table_ref = client.dataset('crypto_solana_temp', project='footprint-blockchain-etl').table(task + '_' + filter_.replace('*', '_star').replace('/', '_').replace('.', '_point'))
     load_job = client.load_table_from_uri(export_location_uri, table_ref, job_config=job_config)
     submit_bigquery_job(load_job, job_config)
 
@@ -96,5 +96,11 @@ def read_bigquery_schema_from_json_recursive(json_schema):
     return result
 
 
-# if __name__ == '__main__':
-#     load_to_bq('blocks')
+if __name__ == '__main__':
+    # for i in range(10):
+        try:
+            load_to_bq('token_transfers', filter_=f'125910000/*')
+        except Exception as e:
+            print(e)
+        # else:
+            # print(i, 'success')

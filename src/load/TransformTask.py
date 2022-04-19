@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Iterable, Set, List, Tuple, Callable
 
 from pandas import DataFrame
+import traceback
 
 from src.transform.AccountType import AccountType
 from src.transform.BalanceChange import BalanceChangeAgg
@@ -50,7 +51,7 @@ def block_to_transactions(block: Block) -> ResultsAndErrors:
                 list(transaction.log_messages())
             ])
         except Exception as e:
-            errors.append(['blocks_to_transactions', str(block.source), str(e)])
+            errors.append(['blocks_to_transactions', str(block.source), str(str(traceback.format_exc()))])
 
     return rows, errors
 
@@ -79,7 +80,7 @@ def block_to_transfers(block: Block) -> ResultsAndErrors:
                     block.hash
                 ])
         except Exception as e:
-            errors.append(['blocks_to_transfers', str(block.source), str(e)])
+            errors.append(['blocks_to_transfers', str(block.source), str(str(traceback.format_exc()))])
 
     return rows, errors
 

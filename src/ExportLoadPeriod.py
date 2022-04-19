@@ -39,6 +39,7 @@ def main():
     parser.add_argument('--temp_dir', type=str, help='Temp directory for dask when spilling to disk.', required=True)
     parser.add_argument('--destination_dir', type=str, help='Where to write the results.', required=True)
     parser.add_argument('--destination_format', type=str, help='File format of results.', required=True)
+    parser.add_argument('--skip_download', type=bool, help='download blocks or not.', required=False)
 
     parser.add_argument('--keep_subdirs', help='Produce results for each subdir of source.', action='store_true')
 
@@ -53,7 +54,8 @@ def main():
 
     for start, end, dir_path_block in split(args.start, args.end):
         print('running data===', start, end)
-        extract.start_multi(start, end, args.n_jobs, _range=solana_client.get_confirmed_blocks(start, end)['result'])
+        if not args.skip_download:
+            extract.start_multi(start, end, args.n_jobs, _range=solana_client.get_confirmed_blocks(start, end)['result'])
         with FileOutput.with_local_cluster(temp_dir=args.temp_dir, blocks_dir=args.output_loc + f'/{dir_path_block}') as output:
             output.write(
                 TransformTask.from_names(args.tasks),
@@ -64,7 +66,8 @@ def main():
 
         for _data_type in ['blocks', 'transfers', 'transactions']:
             upload_data_to_gcs(_data_type, dir_path_block)
-        upload_block_raw_to_gcs(dir_path_block)
+        if not args.skip_download:
+            upload_block_raw_to_gcs(dir_path_block)
 
 
 if __name__ == '__main__':
