@@ -63,7 +63,7 @@ def main():
                         return get_range(start, end, count+1)
                     raise Exception('call error!!')
             extract.start_multi(start, end, args.n_jobs, _range=get_range(start, end))
-        with FileOutput.with_local_cluster(temp_dir=args.temp_dir, blocks_dir=args.output_loc + f'/{dir_path_block}') as output:
+        with FileOutput.with_local_cluster(temp_dir=args.temp_dir, blocks_dir=args.output_loc + f'/{dir_path_block}', n_workers=args.n_jobs) as output:
             output.write(
                 TransformTask.from_names(args.tasks),
                 args.destination_dir + f'/{dir_path_block}',
@@ -72,7 +72,7 @@ def main():
             )
 
         for _data_type in ['blocks', 'transfers', 'transactions']:
-            upload_data_to_gcs(_data_type, dir_path_block)
+            upload_data_to_gcs(_data_type, dir_path_block, n_jobs=args.n_jobs)
         if not args.skip_download:
             upload_block_raw_to_gcs(dir_path_block)
 
