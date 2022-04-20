@@ -55,7 +55,14 @@ def main():
     for start, end, dir_path_block in split(args.start, args.end):
         print('running data===', start, end)
         if not args.skip_download:
-            extract.start_multi(start, end, args.n_jobs, _range=solana_client.get_confirmed_blocks(start, end)['result'])
+            def get_range(start, end, count=0):
+                try:
+                    return solana_client.get_confirmed_blocks(start, end)['result']
+                except Exception as e:
+                    if count <= 2:
+                        return get_range(start, end, count+1)
+                    raise Exception('call error!!')
+            extract.start_multi(start, end, args.n_jobs, _range=get_range(start, end))
         with FileOutput.with_local_cluster(temp_dir=args.temp_dir, blocks_dir=args.output_loc + f'/{dir_path_block}') as output:
             output.write(
                 TransformTask.from_names(args.tasks),
