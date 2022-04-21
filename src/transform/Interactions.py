@@ -36,8 +36,9 @@ class Interactions:
                 #     ProgramInstruction.SPL_TRANSFER.filter(transaction.instructions, True)
                 # ))
                 # fix token_transfers source = destination
+                balance_changes = transaction.token_balance_changes
                 self.interactions.extend(
-                    [partial(TokenTransfer.from_instruction, transaction)(i) for i in ProgramInstruction.SPL_TRANSFER.filter(transaction.instructions, True) if i.info_accounts['source'] != i.info_accounts['destination']]
+                    [partial(TokenTransfer.from_instruction, transaction)(i) for i in ProgramInstruction.SPL_TRANSFER.filter(transaction.instructions, True) if i.info_accounts['source'] in balance_changes or i.info_accounts['destination'] in balance_changes]
                 )
 
     def __iter__(self):
