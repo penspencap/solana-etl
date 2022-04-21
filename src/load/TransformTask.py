@@ -7,8 +7,6 @@ from typing import Iterable, Set, List, Tuple, Callable
 from pandas import DataFrame
 import traceback
 
-from src.transform.AccountType import AccountType
-from src.transform.BalanceChange import BalanceChangeAgg
 from src.transform.Block import Block
 from src.transform.Interactions import Interactions
 from src.transform.Transfer import Transfer
@@ -23,7 +21,11 @@ def block_to_transactions(block: Block) -> ResultsAndErrors:
 
     for transaction in block.transactions:
         try:
-            programs = list(map(lambda a: a.key, transaction.instructions.programs))
+            instructions = transaction.instructions
+            programs = list(map(lambda a: a.key, instructions.programs))
+            mints = list(transaction.mints)
+            accounts = list(transaction.accounts._accounts_by_key.keys())
+            signers = transaction.signers
             rows.append([
                 block.epoch,
                 block.block_slot,
@@ -31,7 +33,7 @@ def block_to_transactions(block: Block) -> ResultsAndErrors:
                 transaction.signature,
                 transaction.fee,
                 transaction.is_successful,
-                len(transaction.instructions),
+                len(instructions),
                 [{
                     "program": instruction.program.key,
                     "gen_id": instruction.gen_id,
@@ -39,14 +41,14 @@ def block_to_transactions(block: Block) -> ResultsAndErrors:
                     "data": getattr(instruction, 'data', None),
                     "instruction_type": getattr(instruction, 'instruction_type', None),
                     "accounts": [account.key for account in instruction.accounts],
-                } for instruction in transaction.instructions],
-                list(set(transaction.signers)),
-                transaction.signers[0],
+                } for instruction in instructions],
+                signers,
+                signers[0],
                 programs,
-                list(transaction.accounts._accounts_by_key.keys()),
-                len(transaction.accounts),
-                json.dumps(len(transaction.mints)),
-                list(transaction.mints), # 留意, 非原来顺序
+                accounts,
+                len(accounts),
+                len(mints),
+                mints,  # 留意, 非原来顺序
                 block.hash,
                 list(transaction.log_messages())
             ])

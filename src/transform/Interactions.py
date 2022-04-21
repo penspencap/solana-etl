@@ -31,10 +31,14 @@ class Interactions:
                 ))
 
                 # add token transfers
-                self.interactions.extend(map(
-                    partial(TokenTransfer.from_instruction, transaction),
-                    ProgramInstruction.SPL_TRANSFER.filter(transaction.instructions, True)
-                ))
+                # self.interactions.extend(map(
+                #     partial(TokenTransfer.from_instruction, transaction),
+                #     ProgramInstruction.SPL_TRANSFER.filter(transaction.instructions, True)
+                # ))
+                # fix token_transfers source = destination
+                self.interactions.extend(
+                    [partial(TokenTransfer.from_instruction, transaction)(i) for i in ProgramInstruction.SPL_TRANSFER.filter(transaction.instructions, True) if i.info_accounts['source'] != i.info_accounts['destination']]
+                )
 
     def __iter__(self):
         return self.interactions.__iter__()
