@@ -140,7 +140,7 @@ class FileOutput:
             # pickling gets tricky with the enum so convert it to a dict with name -> transform
             transforms = {task.name: task.transform for task in tasks}
 
-            results_with_errors = bag.read_text(source, include_path=True, files_per_partition=16) \
+            results_with_errors = bag.read_text(source, include_path=True, files_per_partition=60) \
                 .map(lambda json_and_path: FileOutput.transform(transforms, json_and_path))
 
             # extract out the specific transform results, flatten, and create a delayed task to output to file
