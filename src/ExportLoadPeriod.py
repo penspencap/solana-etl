@@ -4,6 +4,7 @@ from src.extract.ExtractBatch import ExtractBatch
 from src.load.FileOutput import FileOutput, FileOutputFormat
 from src.load.TransformTask import TransformTask
 from src.load.Upload import upload_data_to_gcs, upload_block_raw_to_gcs
+import time
 
 
 def split(start: int, end: int):
@@ -53,7 +54,8 @@ def main():
     )
 
     for start, end, dir_path_block in split(args.start, args.end):
-        print('running data===', start, end)
+        st = time.time()
+        print('Running data===', start, end)
         if not args.skip_download:
             def get_range(start, end, count=0):
                 try:
@@ -75,6 +77,7 @@ def main():
             upload_data_to_gcs(_data_type, dir_path_block, n_jobs=args.n_jobs)
         if not args.skip_download:
             upload_block_raw_to_gcs(dir_path_block)
+        print('Finish data===', start, end, ' Total using time: ', time.time()-st)
 
 
 if __name__ == '__main__':
