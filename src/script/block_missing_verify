@@ -1,0 +1,29 @@
+-- block missing
+select left_number, right_number, diff from(
+select   (rb.block_height-next_height)-1 as diff, rb.block_height, rb.number as right_number, next_height, nb.number as left_number from (
+SELECT
+  block_height,
+  number,
+  LAG(block_height)
+    OVER ( ORDER BY block_height ASC) AS next_height
+FROM `footprint-blockchain-etl.crypto_solana_temp.blocks_{block_number}_star`
+) rb left join `footprint-blockchain-etl.crypto_solana_temp.blocks_{block_number}_star` nb on rb.next_height=nb.block_height)
+where diff > 0 order by left_number desc
+;
+
+-- transaction count == block count
+select tx.block_height as tx_block_height, bl.number, tx_count, num_transactions from (
+select count(*) as tx_count, block_height  from `footprint-blockchain-etl.crypto_solana_temp.transactions_{block_number}_star`  group by block_height
+) tx
+left join `footprint-blockchain-etl.crypto_solana_temp.blocks_{block_number}_star` bl on bl.block_height=tx.block_height
+where tx.tx_count != bl.num_transactions
+;
+-- block_distinct
+select distinct block  from (
+    select count(*) as c, cast(number/10000 as int) *10000 as block from `footprint-blockchain-etl.crypto_solana_temp.blocks_{block_number}_star` group by number
+) where c > 1
+;
+-- transaction_distinct
+select distinct signature  from (
+    select count(*) as c, signature from `footprint-blockchain-etl.crypto_solana_temp.transactions_{block_number}_star` group by signature
+) where c > 1
