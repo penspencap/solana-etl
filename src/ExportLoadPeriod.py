@@ -59,7 +59,7 @@ def main():
         if not args.skip_download:
             def get_range(start, end, count=0):
                 try:
-                    return solana_client.get_confirmed_blocks(start, end)['result']
+                    return solana_client.get_blocks(start, end)['result']
                 except Exception as e:
                     if count <= 2:
                         return get_range(start, end, count+1)
