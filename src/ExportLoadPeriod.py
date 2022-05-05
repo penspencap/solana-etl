@@ -72,7 +72,7 @@ def main():
                         except Exception as e:
                             if confirm_count <= 2:
                                 confirm_count = confirm_count + 1
-                                return confirm_blocks(startBlock, endBlock, solana_client)
+                                slots.extend(confirm_blocks(startBlock, endBlock, solana_client))
                             raise Exception(f"{startBlock}-{endBlock} error")
                     return slots
                 except Exception as e:
