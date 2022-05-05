@@ -15,7 +15,7 @@ def confirm_blocks(startBlock: int, endBlock: int, solana_client, count=0):
         return solana_client.get_blocks(startBlock, endBlock)['result']
     except Exception as e:
         if count <= 2:
-            return confirm_blocks(startBlock, endBlock, count + 1)
+            return confirm_blocks(startBlock, endBlock, solana_client, count + 1)
         raise Exception(f"{startBlock}-{endBlock} error")
 
 def main():
