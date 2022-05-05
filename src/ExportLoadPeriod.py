@@ -53,14 +53,16 @@ def main():
         timeout=600
     )
 
-    for start, end, dir_path_block in split(args.start, args.end, 10000):
+    for start, end, dir_path_block in split(args.start, args.end, args.slots_per_dir):
         st = time.time()
         print('Running data===', start, end)
         if not args.skip_download:
             def get_range(start, end, count=0):
                 try:
+                    slots = []
                     for startBlock, endBlock, dir in split(start, end, 1000):
-                        return solana_client.get_confirmed_blocks(startBlock, endBlock)['result']
+                        slots.extend(solana_client.get_confirmed_blocks(startBlock, endBlock)['result'])
+                    return slots
                 except Exception as e:
                     if count <= 2:
                         return get_range(start, end, count+1)
