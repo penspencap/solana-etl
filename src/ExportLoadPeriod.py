@@ -7,8 +7,8 @@ from src.load.Upload import upload_data_to_gcs, upload_block_raw_to_gcs
 import time
 
 
-def split(start: int, end: int):
-    return [(max(start, (start+i*10000)//10000*10000), min(end, (start+(i+1)*10000)//10000*10000-1), (start+i*10000)//10000*10000) for i in range(end//10000-start//10000+1)]
+def split(start: int, end: int, inter: int):
+    return [(max(start, (start+i*inter)//inter*inter), min(end, (start+(i+1)*inter)//inter*inter-1), (start+i*inter)//inter*inter) for i in range(end//inter-start//inter+1)]
 
 
 def main():
@@ -53,13 +53,14 @@ def main():
         timeout=600
     )
 
-    for start, end, dir_path_block in split(args.start, args.end):
+    for start, end, dir_path_block in split(args.start, args.end, 10000):
         st = time.time()
         print('Running data===', start, end)
         if not args.skip_download:
             def get_range(start, end, count=0):
                 try:
-                    return solana_client.get_confirmed_blocks(start, end)['result']
+                    for startBlock, endBlock, dir in split(start, end, 1000):
+                        return solana_client.get_confirmed_blocks(startBlock, endBlock)['result']
                 except Exception as e:
                     if count <= 2:
                         return get_range(start, end, count+1)
