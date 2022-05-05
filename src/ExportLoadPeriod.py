@@ -10,11 +10,13 @@ import time
 def split(start: int, end: int, inter: int):
     return [(max(start, (start+i*inter)//inter*inter), min(end, (start+(i+1)*inter)//inter*inter-1), (start+i*inter)//inter*inter) for i in range(end//inter-start//inter+1)]
 
-def confirm_blocks(startBlock: int, endBlock: int, solana_client):
+def confirm_blocks(startBlock: int, endBlock: int, solana_client, count=0):
     try:
         return solana_client.get_blocks(startBlock, endBlock)['result']
     except Exception as e:
-        return e
+        if count <= 2:
+            return confirm_blocks(startBlock, endBlock, count + 1)
+        raise Exception(f"{startBlock}-{endBlock} error")
 
 def main():
     parser = ArgumentParser(description='Extract solana blocks from rpc.')
@@ -66,14 +68,10 @@ def main():
                 try:
                     slots = []
                     for startBlock, endBlock, dir in split(start, end, 1000):
-                        confirm_count = 0
                         try:
                             slots.extend(confirm_blocks(startBlock, endBlock, solana_client))
                         except Exception as e:
-                            if confirm_count <= 2:
-                                confirm_count = confirm_count + 1
-                                slots.extend(confirm_blocks(startBlock, endBlock, solana_client))
-                            raise Exception(f"{startBlock}-{endBlock} error")
+                            raise e
                     return slots
                 except Exception as e:
                     if count <= 2:
