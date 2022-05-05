@@ -99,6 +99,9 @@ def upload_daily():
                 file.writelines(num_str)
             time.sleep(60)
 
-
 if __name__ == '__main__':
-    upload_daily()
+    try:
+        upload_daily()
+    except Exception as e:
+        mes = f'An exception occurs when executing the solana daily upload!!! \n Exception Message : {e}'
+        slack_push_exception(mes)
