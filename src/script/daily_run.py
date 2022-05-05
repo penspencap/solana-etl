@@ -73,7 +73,7 @@ def upload_daily():
             max_num = int(num)
         if (new_block_num - max_num > 0):
             end_blocks = new_block_num - 1
-            extract_str = f'export PYTHONPATH=/solana_data/solana-etl;cd /solana_data/solana-etl/;/opt/service/python3.8.10/bin/python3 src/ExportLoadPeriod.py /solana_data/data --start {max_num}0000 --end {end_blocks}9999 --endpoint https://nameless-rough-shadow.solana-mainnet.quiknode.pro/90ad239f98ba9188c30660c2eeec4ef994627cec/ --n_jobs 15 --tasks all --temp_dir /solana_data/temp --destination_dir /solana_data/bq_data/ --destination_format jsonl  >> /solana_data/solana_output.log &2>1'
+            extract_str = f'export PYTHONPATH=/solana_data/solana-etl;cd /solana_data/solana-etl/;/opt/service/python3.8.10/bin/python3 src/ExportLoadPeriod.py /solana_data/data --start {max_num}0000 --end {end_blocks}9999 --endpoint https://bold-wispy-wave.solana-mainnet.quiknode.pro/ceb132a60cccc7ec89a7e2de92efec50706dfead/ --n_jobs 15 --tasks all --temp_dir /solana_data/temp --destination_dir /solana_data/bq_data/ --destination_format jsonl  >> /solana_data/solana_output.log &2>1'
             os.system(extract_str)
             for i in range(max_num, new_block_num):
                 produce_table(i)
