@@ -1,0 +1,81 @@
+delete from `footprint-blockchain-etl.crypto_solana.transactions`
+where block_number > {start_num} and block_number < {end_num};
+
+insert into `footprint-blockchain-etl.crypto_solana.transactions` (
+  `block_timestamp`,
+  `block_number`,
+  `block_height`,
+  `signature`,
+  `fee`,
+  `is_successful`,
+  `num_instructions`,
+  `signers`,
+  `main_signer`,
+  `programs`,
+  `accounts`,
+  `num_accounts`,
+  `num_mints`,
+  `mints`,
+  `block_hash`,
+  `logMessages`,
+  `instructions`
+)
+
+select
+`time` as block_timestamp,
+`block_number`,
+`block_height`,
+`signature`,
+`fee`,
+`is_successful`,
+`num_instructions`,
+`signers`,
+`main_signer`,
+`programs`,
+`accounts`,
+`num_accounts`,
+`num_mints`,
+`mints`,
+`block_hash`,
+`logMessages`,
+`instructions`,
+from `footprint-blockchain-etl.crypto_solana_temp.transactions_{blocks_number}_star`
+;
+
+delete from `footprint-blockchain-etl.crypto_solana.blocks`
+where number > {start_num} and number < {end_num};
+
+insert into `footprint-blockchain-etl.crypto_solana.blocks` (
+  timestamp, number, block_height, block_hash, previous_hash, previous_number,num_transactions
+)
+select timestamp, number, block_height,`hash` as block_hash, previous_hash, previous_number,num_transactions from `footprint-blockchain-etl.crypto_solana_temp.blocks_{blocks_number}_star`
+;
+
+delete from `footprint-blockchain-etl.crypto_solana.token_transfers`
+where block_number > {start_num} and block_number < {end_num};
+
+insert into `footprint-blockchain-etl.crypto_solana.token_transfers` (
+  block_timestamp,
+  `block_number`,
+  `block_height`,
+  `source`,
+  `destination`,
+  `mint`,
+  `value`,
+  `scale`,
+  `signature`,
+  `block_hash`
+)
+
+select
+`timestamp` as block_timestamp,
+`block_number`,
+`block_height`,
+`source`,
+`destination`,
+`mint`,
+`value`,
+`scale`,
+`signature`,
+`block_hash`,
+from `footprint-blockchain-etl.crypto_solana_temp.token_transfers_{blocks_number}_star`
