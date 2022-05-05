@@ -68,10 +68,7 @@ def main():
                 try:
                     slots = []
                     for startBlock, endBlock, dir in split(start, end, 1000):
-                        try:
                             slots.extend(confirm_blocks(startBlock, endBlock, solana_client))
-                        except Exception as e:
-                            raise e
                     return slots
                 except Exception as e:
                     if count <= 2:
