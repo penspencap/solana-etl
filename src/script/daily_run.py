@@ -4,15 +4,7 @@ import time
 import requests
 import upload_gcs_script
 from google.cloud import bigquery
-
-
-
-
-def slack_push_mes(start_num, end_num, mes):
-    url = 'https://hooks.slack.com/services/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'
-    req = requests.post(url, json={
-        'text': f'Solana chain extract failed: {mes} {start_num}0000 to {end_num}9999. Please check it out \n <@U02HSQQDX71> <@U010F3Z5Z98>'})
-    print(req)
+from src.script.slack_push_mes import slack_push_mes
 
 
 def get_current_num():
@@ -25,7 +17,7 @@ def get_current_num():
 
 
 def sql_to_bigquery(sql):
-    client = bigquery.Client()
+    client = bigquery.Client(project='footprint-blockchain-etl')
     query_job = client.query(sql)
     rows = query_job.result()
     for row in rows:
@@ -52,7 +44,7 @@ def produce_verify_sql(block_number):
 def produce_total_verify_sql():
     sql = ''
     with open("total_verify", 'r') as file:
-        sql = sql + file.read()
+        sql = file.read()
     return sql
 
 def produce_merge_sql(block_number):
@@ -66,10 +58,10 @@ def produce_merge_sql(block_number):
     return sql
 
 
-def clear_space():
-    os.system('rm -rf /solana_data/bq_data/*')
-    os.system('rm -rf /solana_data/blocks_raw/*')
-    os.system('rm -rf /solana_data/data/*')
+def clear_space(i):
+    os.system(f'rm -rf /solana_data/bq_data/{i}0000')
+    os.system(f'rm -rf /solana_data/blocks_raw/{i}0000')
+    os.system(f'rm -rf /solana_data/data/{i}0000')
 
 
 def upload_daily():
@@ -83,37 +75,28 @@ def upload_daily():
             end_blocks = new_block_num - 1
             extract_str = f'export PYTHONPATH=/solana_data/solana-etl;cd /solana_data/solana-etl/;/opt/service/python3.8.10/bin/python3 src/ExportLoadPeriod.py /solana_data/data --start {max_num}0000 --end {end_blocks}9999 --endpoint https://nameless-rough-shadow.solana-mainnet.quiknode.pro/90ad239f98ba9188c30660c2eeec4ef994627cec/ --n_jobs 15 --tasks all --temp_dir /solana_data/temp --destination_dir /solana_data/bq_data/ --destination_format jsonl  >> /solana_data/solana_output.log &2>1'
             os.system(extract_str)
-            print(extract_str)
             for i in range(max_num, new_block_num):
                 produce_table(i)
                 verify_sql = produce_verify_sql(i)
-                print(verify_sql)
                 verify_result = sql_to_bigquery(verify_sql)
-                print(verify_result.total_rows)
                 if (verify_result.total_rows != 0):
                     slack_push_mes(max_num, end_blocks, "An exception occurred before merging")
                     return False
                 merge_sql = produce_merge_sql(i)
-                print(merge_sql)
                 merge_result = sql_to_bigquery(merge_sql)
                 total_verify_sql = produce_total_verify_sql()
-                print(total_verify_sql)
                 total_verify_result = sql_to_bigquery(total_verify_sql)
-                print(total_verify_result.total_rows)
-                # if(total_verify_result.total_rows != 0):
-                #     # slack_push_mes(max_num, end_blocks, "An exception occurred after merging")
-                #     print("合并后校验失败")
-                #     return False
-                clear_space()
+                if(total_verify_result.total_rows != 0):
+                    slack_push_mes(max_num, end_blocks, "An exception occurred after merging")
+                    return False
+                clear_space(i)
                 max_num = new_block_num
-            with open('max_num', 'w') as f:
-                num = max_num + 1
-                str = f'{num}'
-                f.write(str)
-            with open('hisitory_max_num', 'a') as file:
-                num = max_num + 1
-                str = f'{num}\n'
-                file.writelines(str)
+
+            num = max_num + 1
+            with open('max_num', 'w') as f, open('hisitory_max_num', 'a') as file:
+                num_str = f'{num}'
+                f.write(num_str)
+                file.writelines(num_str)
             time.sleep(60)
 
 
