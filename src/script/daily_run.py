@@ -4,7 +4,7 @@ import time
 import requests
 import upload_gcs_script
 from google.cloud import bigquery
-from src.script.slack_push_mes import slack_push_mes
+from src.script.slack_push_mes import slack_push_mes, slack_push_exception
 
 
 def get_current_num():
@@ -97,7 +97,7 @@ def upload_daily():
                 num_str = f'{num}'
                 f.write(num_str)
                 file.writelines(num_str)
-            time.sleep(60)
+        time.sleep(60)
 
 if __name__ == '__main__':
     try:
