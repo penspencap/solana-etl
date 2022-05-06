@@ -103,5 +103,5 @@ if __name__ == '__main__':
     try:
         upload_daily()
     except Exception as e:
-        mes = f'An exception occurs when executing the solana daily upload!!! \n Exception Message : {e}'
+        mes = f'An exception occurs when executing the solana daily upload!!! <@U02HSQQDX71> <@U010F3Z5Z98>\n Exception Message : {e}'
         slack_push_exception(mes)
