@@ -7,7 +7,7 @@ from google.cloud.bigquery import TimePartitioning
 def load_to_bq(task, filter_='1261*'):
     client = bigquery.Client('footprint-etl-internal')
     job_config = bigquery.LoadJobConfig()
-    schema_path = os.path.join('/Users/pen/cryptoProject/solana-etl/src/resource/schema/{task}.json'.format(task=task))
+    schema_path = os.path.join('/solana_data/solana-etl/src/resource/schema/{task}.json'.format(task=task))
     schema = read_bigquery_schema_from_file(schema_path)
     job_config.schema = schema
     job_config.source_format = bigquery.SourceFormat.NEWLINE_DELIMITED_JSON

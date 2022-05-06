@@ -4,7 +4,7 @@ import time
 import requests
 import upload_gcs_script
 from google.cloud import bigquery
-from src.script.slack_push_mes import slack_push_mes
+from src.script.slack_push_mes import slack_push_mes, slack_push_exception
 
 
 def get_current_num():
@@ -97,11 +97,11 @@ def upload_daily():
                 num_str = f'{num}'
                 f.write(num_str)
                 file.writelines(num_str)
-            time.sleep(60)
+        time.sleep(60)
 
 if __name__ == '__main__':
     try:
         upload_daily()
     except Exception as e:
-        mes = f'An exception occurs when executing the solana daily upload!!! \n Exception Message : {e}'
+        mes = f'An exception occurs when executing the solana daily upload!!! <@U02HSQQDX71> <@U010F3Z5Z98>\n Exception Message : {e}'
         slack_push_exception(mes)
