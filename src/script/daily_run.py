@@ -80,14 +80,14 @@ def upload_daily():
                 verify_sql = produce_verify_sql(i)
                 verify_result = sql_to_bigquery(verify_sql)
                 if (verify_result.total_rows != 0):
-                    # slack_push_mes(max_num, end_blocks, "An exception occurred before merging")
+                    slack_push_mes(max_num, end_blocks, "An exception occurred before merging")
                     return False
                 merge_sql = produce_merge_sql(i)
                 merge_result = sql_to_bigquery(merge_sql)
                 total_verify_sql = produce_total_verify_sql()
                 total_verify_result = sql_to_bigquery(total_verify_sql)
                 if(total_verify_result.total_rows != 0):
-                    # slack_push_mes(max_num, end_blocks, "An exception occurred after merging")
+                    slack_push_mes(max_num, end_blocks, "An exception occurred after merging")
                     return False
                 clear_space(i)
                 max_num = new_block_num
