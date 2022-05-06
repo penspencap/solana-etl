@@ -35,7 +35,7 @@ def produce_table(filter):
 
 def produce_verify_sql(block_number):
     sql_string = ''
-    with open("block_missing_verify", 'r') as file:
+    with open("src/script/block_missing_verify", 'r') as file:
         line = file.read()
         sql_string = sql_string + line
     sql = sql_string.format(block_number=block_number)
@@ -43,13 +43,13 @@ def produce_verify_sql(block_number):
 
 def produce_total_verify_sql():
     sql = ''
-    with open("total_verify", 'r') as file:
+    with open("src/script/total_verify", 'r') as file:
         sql = file.read()
     return sql
 
 def produce_merge_sql(block_number):
     sql_string = ''
-    with open("only_merge", 'r') as file:
+    with open("src/script/only_merge", 'r') as file:
         line = file.read()
         sql_string = sql_string + line
     start_num = f'{block_number}0000'
@@ -68,7 +68,7 @@ def upload_daily():
     max_num = 0
     while (True):
         new_block_num = get_current_num()
-        with open('max_num', 'r') as file:
+        with open('src/script/max_num', 'r') as file:
             num = file.read()
             max_num = int(num)
         if (new_block_num - max_num > 0):
@@ -80,20 +80,20 @@ def upload_daily():
                 verify_sql = produce_verify_sql(i)
                 verify_result = sql_to_bigquery(verify_sql)
                 if (verify_result.total_rows != 0):
-                    slack_push_mes(max_num, end_blocks, "An exception occurred before merging")
+                    # slack_push_mes(max_num, end_blocks, "An exception occurred before merging")
                     return False
                 merge_sql = produce_merge_sql(i)
                 merge_result = sql_to_bigquery(merge_sql)
                 total_verify_sql = produce_total_verify_sql()
                 total_verify_result = sql_to_bigquery(total_verify_sql)
                 if(total_verify_result.total_rows != 0):
-                    slack_push_mes(max_num, end_blocks, "An exception occurred after merging")
+                    # slack_push_mes(max_num, end_blocks, "An exception occurred after merging")
                     return False
                 clear_space(i)
                 max_num = new_block_num
 
             num = max_num + 1
-            with open('max_num', 'w') as f, open('hisitory_max_num', 'a') as file:
+            with open('src/script/max_num', 'w') as f, open('src/script/hisitory_max_num', 'a') as file:
                 num_str = f'{num}'
                 f.write(num_str)
                 file.writelines(num_str)
