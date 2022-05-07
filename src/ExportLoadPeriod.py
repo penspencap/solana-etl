@@ -10,9 +10,17 @@ import time
 def split(start: int, end: int, inter: int):
     return [(max(start, (start+i*inter)//inter*inter), min(end, (start+(i+1)*inter)//inter*inter-1), (start+i*inter)//inter*inter) for i in range(end//inter-start//inter+1)]
 
+
 def confirm_blocks(startBlock: int, endBlock: int, solana_client, count=0):
     try:
-        return solana_client.get_blocks(startBlock, endBlock)['result']
+        print('Getting blocks', startBlock, endBlock, f' #retry={count}' if count else '')
+        st = time.time()
+        blocks = solana_client.get_blocks(startBlock, endBlock)['result']
+        if blocks:
+            print('get block using time===== ', time.time() - st)
+            return blocks
+        else:
+            raise Exception('Retry the empty result.')
     except Exception as e:
         if count <= 2:
             return confirm_blocks(startBlock, endBlock, solana_client, count + 1)
