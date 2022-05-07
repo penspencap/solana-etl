@@ -93,7 +93,7 @@ def upload_daily():
                 max_num = new_block_num
 
             num = max_num + 1
-            with open('/solana_data/solana-etl/src/script/max_num', 'w') as f, open('src/script/hisitory_max_num', 'a') as file:
+            with open('/solana_data/solana-etl/src/script/max_num', 'w') as f, open('/solana_data/solana-etl/src/script/hisitory_max_num', 'a') as file:
                 num_str = f'{num}'
                 f.write(num_str)
                 file.writelines(num_str)
