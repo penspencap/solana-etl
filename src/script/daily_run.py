@@ -8,6 +8,8 @@ from src.script.slack_push_mes import slack_push_mes, slack_push_exception
 import traceback
 import sys
 
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/solana_data/solana-etl/blockchain-data-process@footprint-blockchain-etl.iam.gserviceaccount.com.json'
+
 def get_current_num():
     url = 'https://nameless-rough-shadow.solana-mainnet.quiknode.pro/90ad239f98ba9188c30660c2eeec4ef994627cec'
     data = {"jsonrpc": "2.0", "id": 1, "method": "getSlot"}
