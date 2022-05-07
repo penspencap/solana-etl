@@ -6,6 +6,7 @@ import upload_gcs_script
 from google.cloud import bigquery
 from src.script.slack_push_mes import slack_push_mes, slack_push_exception
 import traceback
+import sys
 
 def get_current_num():
     url = 'https://nameless-rough-shadow.solana-mainnet.quiknode.pro/90ad239f98ba9188c30660c2eeec4ef994627cec'
@@ -104,5 +105,6 @@ if __name__ == '__main__':
         upload_daily()
     except Exception as e:
         mes = f'An exception occurs when executing the solana daily upload!!! <@U02HSQQDX71> <@U010F3Z5Z98>\n Exception Message : {e}'
-        traceback.print_exec()
+        exc_type, exc_value, exc_traceback_obj = sys.exc_info()
+        traceback.print_tb(exc_traceback_obj)
         slack_push_exception(mes)
